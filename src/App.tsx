@@ -93,6 +93,13 @@ const VideoPlayerWithRef: React.FC<VideoPlayerWithRefProps> = ({
     return () => setVideoElement(null);
   }, []);
 
+  // video 元素加载好后设置到 store
+  const handleCanPlay = () => {
+    if (videoRef.current) {
+      setVideoElement(videoRef.current);
+    }
+  };
+
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       setCurrentTime(videoRef.current.currentTime);
@@ -123,6 +130,7 @@ const VideoPlayerWithRef: React.FC<VideoPlayerWithRefProps> = ({
         width="100%"
         height="100%"
         controls
+        onCanPlay={handleCanPlay}
         onTimeUpdate={handleTimeUpdate}
         onPlay={handlePlay}
         onPause={handlePause}

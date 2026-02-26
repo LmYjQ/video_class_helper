@@ -7,7 +7,9 @@ import { Subtitle } from '../types';
  */
 export function parseSRT(content: string): Subtitle[] {
   const subtitles: Subtitle[] = [];
-  const blocks = content.trim().split(/\n\n+/);
+  // 统一换行符：将 CRLF (\r\n) 和 CR (\r) 转换为 LF (\n)
+  const normalizedContent = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const blocks = normalizedContent.trim().split(/\n\n+/);
 
   for (const block of blocks) {
     const lines = block.split('\n');

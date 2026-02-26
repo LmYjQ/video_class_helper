@@ -1,19 +1,31 @@
 import React, { useRef, useEffect } from 'react';
-import ReactPlayer from 'react-player';
 import { convertFileSrc } from '@tauri-apps/api/core';
-import { useAppStore } from '../store';
+import { useAppStore, setVideoElement } from '../store';
 
 interface VideoPlayerProps {
   videoPath: string | null;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoPath }) => {
-  const playerRef = useRef<ReactPlayer>(null);
-  const { setCurrentTime, setIsPlaying, currentTime, subtitles } = useAppStore();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { setCurrentTime, setIsPlaying, currentTime } = useAppStore();
+
+  // 转换文件路径为 Tauri 可用的 URL
+  const videoUrl = videoPath ? convertFileSrc(videoPath) : null;
+
+  // 将 video 元素注册到 store
+  useEffect(() => {
+    if (videoRef.current) {
+      setVideoElement(videoRef.current);
+    }
+    return () => setVideoElement(null);
+  }, []);
 
   // 处理播放进度
-  const handleProgress = (state: { playedSeconds: number }) => {
-    setCurrentTime(state.playedSeconds);
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
   };
 
   // 处理播放状态变化
@@ -23,7 +35,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoPath }) => {
   // 键盘快捷键
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!playerRef.current) return;
+      if (!videoRef.current) return;
 
       // 忽略在输入框中的快捷键
       if (
@@ -36,15 +48,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoPath }) => {
       switch (e.key) {
         case ' ':
           e.preventDefault();
-          // 空格键切换播放状态
+          if (videoRef.current?.paused) {
+            videoRef.current.play();
+          } else {
+            videoRef.current?.pause();
+          }
           break;
         case 'ArrowLeft':
           e.preventDefault();
-          playerRef.current.seekTo(Math.max(0, currentTime - 10), 'seconds');
+          videoRef.current!.currentTime = Math.max(0, currentTime - 10);
           break;
         case 'ArrowRight':
           e.preventDefault();
-          playerRef.current.seekTo(currentTime + 10, 'seconds');
+          videoRef.current!.currentTime = currentTime + 10;
           break;
       }
     };
@@ -52,9 +68,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoPath }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentTime]);
-
-  // 转换文件路径为 Tauri 可用的 URL
-  const videoUrl = videoPath ? convertFileSrc(videoPath) : null;
 
   if (!videoUrl) {
     return (
@@ -70,17 +83,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoPath }) => {
 
   return (
     <div className="video-player">
-      <ReactPlayer
-        ref={playerRef}
-        url={videoUrl}
-        width="100%"
-        height="100%"
+      <video
+        ref={videoRef}
+        src={videoUrl}
         controls
-        playing={false}
-        onProgress={handleProgress}
+        onTimeUpdate={handleTimeUpdate}
         onPlay={handlePlay}
         onPause={handlePause}
-        progressInterval={500}
       />
     </div>
   );
