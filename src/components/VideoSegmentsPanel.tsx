@@ -3,6 +3,15 @@ import { useAppStore, seekVideo } from '../store';
 import { SiliconFlowAI } from '../services/ai';
 import { formatTime } from '../utils/timeFormat';
 
+// 格式化字幕文本，包含时间信息
+const formatSubtitlesWithTime = (subtitles: { startTime: number; endTime: number; text: string }[]) => {
+  return subtitles.map((s) => {
+    const start = formatTime(s.startTime);
+    const end = formatTime(s.endTime);
+    return `[${start} -> ${end}] ${s.text}`;
+  }).join('\n');
+};
+
 // 解析时间字符串为秒数
 const parseTimeToSeconds = (timeStr: string): number => {
   const parts = timeStr.split(':');
@@ -50,16 +59,21 @@ export const VideoSegmentsPanel: React.FC = () => {
 
     try {
       const ai = new SiliconFlowAI({ apiKey: aiApiKey, model: aiModel });
-      const subtitlesText = subtitles.map((s) => s.text).join('\n');
+      const subtitlesText = formatSubtitlesWithTime(subtitles);
+
+      // 获取视频总时长
+      const totalDuration = subtitles.length > 0
+        ? subtitles[subtitles.length - 1].endTime
+        : 0;
 
       const messages = [
         {
           role: 'system' as const,
-          content: '你是一个视频内容分析助手，擅长将视频内容分段并总结。',
+          content: '你是一个视频内容分析助手，擅长将视频内容分段并总结。请根据字幕的时间戳来确定每个分段的具体时间，确保覆盖整个视频。',
         },
         {
           role: 'user' as const,
-          content: `${segmentPrompt}\n\n字幕内容：\n${subtitlesText}`,
+          content: `${segmentPrompt}\n\n视频总时长：${formatTime(totalDuration)}\n\n字幕内容：\n${subtitlesText}`,
         },
       ];
 
