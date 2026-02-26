@@ -3,6 +3,12 @@ import { useAppStore } from '../store';
 import { SiliconFlowAI } from '../services/ai';
 import { AI_PROMPTS, AIMode } from '../services/ai/types';
 
+// 可用模型列表
+const AVAILABLE_MODELS = [
+  'Qwen/Qwen2.5-7B-Instruct',
+  'Qwen/Qwen3-8B'
+];
+
 export const AIChatPanel: React.FC = () => {
   const {
     subtitles,
@@ -13,6 +19,8 @@ export const AIChatPanel: React.FC = () => {
     setAIMode,
     aiApiKey,
     setAiApiKey,
+    aiModel,
+    setAiModel,
     selectedSubtitleId,
   } = useAppStore();
 
@@ -47,7 +55,7 @@ export const AIChatPanel: React.FC = () => {
     addChatMessage({ role: 'user', content: userMessage });
 
     try {
-      const ai = new SiliconFlowAI({ apiKey: aiApiKey });
+      const ai = new SiliconFlowAI({ apiKey: aiApiKey, model: aiModel });
 
       // 构建消息列表
       const systemPrompt = AI_PROMPTS[aiMode] || '';
@@ -63,7 +71,7 @@ export const AIChatPanel: React.FC = () => {
           : [{ role: 'user' as const, content: subtitlesText + '\n\n问题：' + userMessage }]),
       ];
 
-      const response = await ai.chat(messages);
+      const response = await ai.chat(messages, aiModel);
       addChatMessage({ role: 'assistant', content: response });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '请求失败';
@@ -114,7 +122,7 @@ export const AIChatPanel: React.FC = () => {
 
   return (
     <div className="ai-chat-panel">
-      {/* API Key 设置 */}
+      {/* API Key 和模型选择 */}
       <div className="api-key-section">
         <input
           type="password"
@@ -125,6 +133,17 @@ export const AIChatPanel: React.FC = () => {
         <button onClick={handleSaveApiKey} disabled={!apiKeyInput}>
           保存
         </button>
+        <select
+          value={aiModel}
+          onChange={(e) => setAiModel(e.target.value)}
+          title="选择AI模型"
+        >
+          {AVAILABLE_MODELS.map((model) => (
+            <option key={model} value={model}>
+              {model.split('/')[1]}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* 模式选择 */}

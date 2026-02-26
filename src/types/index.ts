@@ -35,6 +35,7 @@ export interface AppState {
   chatMessages: ChatMessage[];
   aiMode: AIMode;
   aiApiKey: string;
+  aiModel: string;
   notes: string;
   selectedSubtitleId: number | null;
   isUserScrolling: boolean;

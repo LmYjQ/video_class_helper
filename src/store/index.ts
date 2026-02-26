@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { AppState, Subtitle, ChatMessage, AIMode, BottomPanelMode } from '../types';
 
+// 默认模型
+const DEFAULT_MODEL = 'Qwen/Qwen2.5-7B-Instruct';
+
 // 用于存储视频元素的引用
 let videoElement: HTMLVideoElement | null = null;
 
@@ -27,6 +30,7 @@ interface AppStore extends AppState {
   clearChatMessages: () => void;
   setAIMode: (mode: AIMode) => void;
   setAiApiKey: (key: string) => void;
+  setAiModel: (model: string) => void;
   setNotes: (notes: string) => void;
   setSelectedSubtitleId: (id: number | null) => void;
   // 用户是否正在手动滚动字幕列表
@@ -44,6 +48,7 @@ export const useAppStore = create<AppStore>((set) => ({
   chatMessages: [],
   aiMode: 'summarize',
   aiApiKey: localStorage.getItem('aiApiKey') || '',
+  aiModel: localStorage.getItem('aiModel') || DEFAULT_MODEL,
   notes: '',
   selectedSubtitleId: null,
   isUserScrolling: false,
@@ -61,6 +66,10 @@ export const useAppStore = create<AppStore>((set) => ({
   setAiApiKey: (key) => {
     localStorage.setItem('aiApiKey', key);
     set({ aiApiKey: key });
+  },
+  setAiModel: (model) => {
+    localStorage.setItem('aiModel', model);
+    set({ aiModel: model });
   },
   setNotes: (notes) => set({ notes }),
   setSelectedSubtitleId: (id) => set({ selectedSubtitleId: id }),
