@@ -1,4 +1,7 @@
-import { ChatMessage } from '../../types';
+import { ChatMessage, AIMode } from '../../types';
+
+// 导出 AIMode 类型
+export type { AIMode };
 
 /**
  * AI Provider 接口

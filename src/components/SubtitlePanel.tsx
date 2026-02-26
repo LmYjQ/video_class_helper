@@ -3,12 +3,14 @@ import { useAppStore, seekVideo } from '../store';
 import { getCurrentSubtitleIndex } from '../utils/srtParser';
 import { formatTime } from '../utils/timeFormat';
 import { Subtitle } from '../types';
+import { AIChatPanel } from './AIChatPanel';
+import { VideoSegmentsPanel } from './VideoSegmentsPanel';
+import { MarkdownPanel } from './MarkdownPanel';
 
-interface SubtitlePanelProps {
-  onSeek?: (time: number) => void;
-}
+// Tab 类型
+type SubtitleTab = 'subtitles' | 'chat' | 'segments' | 'notes';
 
-export const SubtitlePanel: React.FC<SubtitlePanelProps> = ({ onSeek }) => {
+export const SubtitlePanel: React.FC = () => {
   const {
     subtitles,
     currentTime,
@@ -17,10 +19,11 @@ export const SubtitlePanel: React.FC<SubtitlePanelProps> = ({ onSeek }) => {
     isUserScrolling,
     setIsUserScrolling,
   } = useAppStore();
+
+  const [activeTab, setActiveTab] = useState<SubtitleTab>('subtitles');
   const listRef = useRef<HTMLDivElement>(null);
   const [searchText, setSearchText] = useState('');
   const scrollTimeoutRef = useRef<number | null>(null);
-  const lastScrollTimeRef = useRef<number>(0);
 
   // 获取当前播放的字幕索引
   const currentIndex = getCurrentSubtitleIndex(subtitles, currentTime);
@@ -28,7 +31,6 @@ export const SubtitlePanel: React.FC<SubtitlePanelProps> = ({ onSeek }) => {
   // 处理用户滚动开始
   const handleScrollStart = () => {
     setIsUserScrolling(true);
-    // 清除之前的定时器
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
@@ -36,8 +38,6 @@ export const SubtitlePanel: React.FC<SubtitlePanelProps> = ({ onSeek }) => {
 
   // 处理用户滚动结束 - 延迟恢复自动滚动
   const handleScrollEnd = () => {
-    lastScrollTimeRef.current = Date.now();
-    // 延迟 3 秒后恢复自动滚动
     scrollTimeoutRef.current = window.setTimeout(() => {
       setIsUserScrolling(false);
     }, 3000);
@@ -77,36 +77,18 @@ export const SubtitlePanel: React.FC<SubtitlePanelProps> = ({ onSeek }) => {
       )
     : subtitles;
 
-  if (subtitles.length === 0) {
-    return (
-      <div className="subtitle-panel">
-        <div className="subtitle-search">
-          <input
-            type="text"
-            placeholder="搜索字幕..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            disabled
-          />
-        </div>
+  // 渲染字幕列表
+  const renderSubtitles = () => {
+    if (subtitles.length === 0) {
+      return (
         <div className="subtitle-empty">
           <p>暂无字幕</p>
           <p className="hint">请先加载字幕文件</p>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  return (
-    <div className="subtitle-panel">
-      <div className="subtitle-search">
-        <input
-          type="text"
-          placeholder="搜索字幕..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-      </div>
+    return (
       <div
         className="subtitle-list"
         ref={listRef}
@@ -134,6 +116,62 @@ export const SubtitlePanel: React.FC<SubtitlePanelProps> = ({ onSeek }) => {
             </div>
           );
         })}
+      </div>
+    );
+  };
+
+  return (
+    <div className="subtitle-panel">
+      {/* Tab 导航 */}
+      <div className="subtitle-tabs">
+        <button
+          className={activeTab === 'subtitles' ? 'active' : ''}
+          onClick={() => setActiveTab('subtitles')}
+        >
+          📝 字幕
+        </button>
+        <button
+          className={activeTab === 'chat' ? 'active' : ''}
+          onClick={() => setActiveTab('chat')}
+        >
+          💬 AI对话
+        </button>
+        <button
+          className={activeTab === 'segments' ? 'active' : ''}
+          onClick={() => setActiveTab('segments')}
+        >
+          📑 分段
+        </button>
+        <button
+          className={activeTab === 'notes' ? 'active' : ''}
+          onClick={() => setActiveTab('notes')}
+        >
+          📓 笔记
+        </button>
+      </div>
+
+      {/* Tab 内容 */}
+      <div className="subtitle-content">
+        {activeTab === 'subtitles' && (
+          <>
+            <div className="subtitle-search">
+              <input
+                type="text"
+                placeholder="搜索字幕..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                disabled={subtitles.length === 0}
+              />
+            </div>
+            {renderSubtitles()}
+          </>
+        )}
+
+        {activeTab === 'chat' && <AIChatPanel isEmbedded />}
+
+        {activeTab === 'segments' && <VideoSegmentsPanel />}
+
+        {activeTab === 'notes' && <MarkdownPanel />}
       </div>
     </div>
   );

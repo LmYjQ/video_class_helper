@@ -1,16 +1,11 @@
 import React, { useRef, useCallback, useEffect } from 'react';
 import { convertFileSrc } from '@tauri-apps/api/core';
-import {
-  Toolbar,
-  SubtitlePanel,
-  AIChatPanel,
-  MarkdownPanel,
-} from './components';
-import { useAppStore, setVideoElement, seekVideo } from './store';
+import { Toolbar, SubtitlePanel } from './components';
+import { useAppStore, setVideoElement } from './store';
 import './App.css';
 
 function App() {
-  const { videoPath, bottomPanelMode, setVideoPath } = useAppStore();
+  const { videoPath, setVideoPath } = useAppStore();
 
   // 处理视频加载
   const handleVideoLoad = useCallback((path: string) => {
@@ -23,11 +18,6 @@ function App() {
     console.log('Video URL:', convertFileSrc(path));
     setVideoPath(path, name);
   }, [setVideoPath]);
-
-  // 处理字幕跳转
-  const handleSeek = useCallback((time: number) => {
-    seekVideo(time);
-  }, []);
 
   // 转换视频路径
   const videoUrl = videoPath ? convertFileSrc(videoPath) : null;
@@ -46,30 +36,9 @@ function App() {
 
         {/* 右侧字幕区域 */}
         <div className="subtitle-section">
-          <SubtitlePanel onSeek={handleSeek} />
+          <SubtitlePanel />
         </div>
       </div>
-
-      {/* 底部面板 */}
-      {bottomPanelMode !== 'hidden' && (
-        <div className="bottom-panel">
-          <div className="bottom-panel-header">
-            <span>
-              {bottomPanelMode === 'ai' ? '🤖 AI 对话' : '📓 学习笔记'}
-            </span>
-            <button
-              className="close-btn"
-              onClick={() => useAppStore.getState().setBottomPanelMode('hidden')}
-            >
-              ✕
-            </button>
-          </div>
-          <div className="bottom-panel-content">
-            {bottomPanelMode === 'ai' && <AIChatPanel />}
-            {bottomPanelMode === 'notes' && <MarkdownPanel />}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

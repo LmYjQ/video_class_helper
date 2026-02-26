@@ -94,8 +94,3 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoPath }) => {
     </div>
   );
 };
-
-// 导出 seekTo 函数供外部调用
-export const seekToVideo = (seconds: number) => {
-  // 这个函数会在 SubtitlePanel 中通过 ref 调用
-};

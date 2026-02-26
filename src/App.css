@@ -115,17 +115,65 @@ body,
 
 /* 字幕区域 */
 .subtitle-section {
-  flex: 0 0 40%;
+  flex: 1;
   border-left: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
   background: #fafafa;
+  overflow: hidden;
 }
 
 .subtitle-panel {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+/* 字幕区域 Tab 导航 */
+.subtitle-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff;
+}
+
+.subtitle-tabs button {
+  flex: 1;
+  padding: 8px 4px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  transition: all 0.15s;
+}
+
+.subtitle-tabs button:hover {
+  background: #f0f0f0;
+}
+
+.subtitle-tabs button.active {
+  background: #4a90d9;
+  color: #fff;
+}
+
+/* 字幕内容区域 */
+.subtitle-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* AI 对话面板嵌入模式 */
+.ai-chat-panel.embedded {
+  height: 100%;
+}
+
+.ai-chat-panel.embedded .chat-content {
+  height: calc(100% - 120px);
 }
 
 .subtitle-search {
@@ -397,6 +445,143 @@ body,
 .chat-input button:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+/* Tab 切换 */
+.chat-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.chat-tabs button {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.chat-tabs button.active {
+  background: #4a90d9;
+  color: #fff;
+  border-color: #4a90d9;
+}
+
+.chat-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 120px);
+}
+
+/* 视频分段面板 */
+.video-segments-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.segments-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.segments-toolbar button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.segments-toolbar button.generate-btn {
+  background: #4a90d9;
+  color: #fff;
+  border-color: #4a90d9;
+}
+
+.segments-toolbar button.generate-btn:disabled {
+  background: #ccc;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+.prompt-editor {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.prompt-editor textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  resize: vertical;
+}
+
+.segments-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.segments-empty {
+  text-align: center;
+  color: #999;
+  padding: 20px;
+}
+
+.segments-empty .hint {
+  font-size: 12px;
+  color: #bbb;
+  margin-top: 8px;
+}
+
+.segment-item {
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  transition: all 0.15s;
+}
+
+.segment-item:hover {
+  background: #e8f4fc;
+  border-color: #4a90d9;
+}
+
+.segment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.segment-title {
+  font-weight: 500;
+  color: #333;
+  font-size: 13px;
+}
+
+.segment-time {
+  font-size: 11px;
+  color: #888;
+  font-family: monospace;
+}
+
+.segment-summary {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
 }
 
 /* Markdown 面板 */

@@ -6,6 +6,15 @@ export interface Subtitle {
   text: string;
 }
 
+// 视频分段类型
+export interface VideoSegment {
+  id: number;
+  title: string;        // 分段标题
+  startTime: number;   // 开始时间（秒）
+  endTime: number;     // 结束时间（秒）
+  summary: string;    // 分段总结
+}
+
 // 视频信息
 export interface VideoInfo {
   path: string;
@@ -39,4 +48,7 @@ export interface AppState {
   notes: string;
   selectedSubtitleId: number | null;
   isUserScrolling: boolean;
+  // 视频分段
+  videoSegments: VideoSegment[];
+  segmentPrompt: string;
 }

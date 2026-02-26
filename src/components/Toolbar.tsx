@@ -9,7 +9,7 @@ interface ToolbarProps {
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({ onVideoLoad }) => {
-  const { setSubtitles, bottomPanelMode, setBottomPanelMode } = useAppStore();
+  const { setSubtitles } = useAppStore();
 
   // 加载视频文件
   const handleLoadVideo = async () => {
@@ -52,15 +52,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onVideoLoad }) => {
     }
   };
 
-  // 切换底部面板
-  const toggleBottomPanel = (mode: 'ai' | 'notes') => {
-    if (bottomPanelMode === mode) {
-      setBottomPanelMode('hidden');
-    } else {
-      setBottomPanelMode(mode);
-    }
-  };
-
   return (
     <div className="toolbar">
       <button className="toolbar-btn" onClick={handleLoadVideo}>
@@ -68,19 +59,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onVideoLoad }) => {
       </button>
       <button className="toolbar-btn" onClick={handleLoadSubtitle}>
         📝 加载字幕
-      </button>
-      <div className="toolbar-divider" />
-      <button
-        className={`toolbar-btn ${bottomPanelMode === 'ai' ? 'active' : ''}`}
-        onClick={() => toggleBottomPanel('ai')}
-      >
-        🤖 AI对话
-      </button>
-      <button
-        className={`toolbar-btn ${bottomPanelMode === 'notes' ? 'active' : ''}`}
-        onClick={() => toggleBottomPanel('notes')}
-      >
-        📓 笔记
       </button>
     </div>
   );

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '../store';
 import { SiliconFlowAI } from '../services/ai';
 import { AI_PROMPTS, AIMode } from '../services/ai/types';
+import { VideoSegmentsPanel } from './VideoSegmentsPanel';
 
 // 可用模型列表
 const AVAILABLE_MODELS = [
@@ -9,7 +10,14 @@ const AVAILABLE_MODELS = [
   'Qwen/Qwen3-8B'
 ];
 
-export const AIChatPanel: React.FC = () => {
+// Tab 类型
+type ChatTab = 'chat' | 'segments';
+
+interface AIChatPanelProps {
+  isEmbedded?: boolean;
+}
+
+export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isEmbedded = false }) => {
   const {
     subtitles,
     chatMessages,
@@ -27,6 +35,7 @@ export const AIChatPanel: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState(aiApiKey);
+  const [activeTab, setActiveTab] = useState<ChatTab>('chat');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 自动滚动到最新消息
@@ -121,7 +130,7 @@ export const AIChatPanel: React.FC = () => {
   };
 
   return (
-    <div className="ai-chat-panel">
+    <div className={`ai-chat-panel ${isEmbedded ? 'embedded' : ''}`}>
       {/* API Key 和模型选择 */}
       <div className="api-key-section">
         <input
@@ -146,71 +155,97 @@ export const AIChatPanel: React.FC = () => {
         </select>
       </div>
 
-      {/* 模式选择 */}
-      <div className="mode-buttons">
-        <button
-          className={aiMode === 'summarize' ? 'active' : ''}
-          onClick={() => handlePreset('summarize')}
-        >
-          📝 总结
-        </button>
-        <button
-          className={aiMode === 'optimize' ? 'active' : ''}
-          onClick={() => handlePreset('optimize')}
-        >
-          ✨ 优化
-        </button>
-        <button
-          className={aiMode === 'qa' ? 'active' : ''}
-          onClick={() => handlePreset('qa')}
-        >
-          ❓ 问答
-        </button>
-        <button className="clear-btn" onClick={clearChatMessages}>
-          清空
-        </button>
-      </div>
+      {/* Tab 切换 - 仅在非嵌入模式显示 */}
+      {!isEmbedded && (
+        <div className="chat-tabs">
+          <button
+            className={activeTab === 'chat' ? 'active' : ''}
+            onClick={() => setActiveTab('chat')}
+          >
+            💬 AI对话
+          </button>
+          <button
+            className={activeTab === 'segments' ? 'active' : ''}
+            onClick={() => setActiveTab('segments')}
+          >
+            📑 视频分段
+          </button>
+        </div>
+      )}
 
-      {/* 消息列表 */}
-      <div className="chat-messages">
-        {chatMessages.length === 0 && (
-          <div className="chat-empty">
-            <p>选择模式并发送消息开始对话</p>
-            <p className="hint">
-              提示：点击字幕可以针对特定内容提问
-            </p>
-          </div>
-        )}
-        {chatMessages.map((msg, index) => (
-          <div key={index} className={`chat-message ${msg.role}`}>
-            <div className="message-content">{msg.content}</div>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="chat-message assistant loading">
-            <div className="message-content">思考中...</div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+      {/* 分段面板 - 仅在非嵌入模式显示 */}
+      {!isEmbedded && activeTab === 'segments' && <VideoSegmentsPanel />}
 
-      {/* 输入框 */}
-      <div className="chat-input">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={
-            aiMode === 'qa'
-              ? '输入你的问题...'
-              : '点击上方按钮执行操作，或输入自定义指令...'
-          }
-          disabled={isLoading}
-        />
-        <button onClick={handleSend} disabled={isLoading || !input.trim()}>
-          发送
-        </button>
-      </div>
+      {/* AI对话内容 */}
+      {(isEmbedded || activeTab === 'chat') && (
+        <div className="chat-content">
+          {/* 模式选择 */}
+          <div className="mode-buttons">
+            <button
+              className={aiMode === 'summarize' ? 'active' : ''}
+              onClick={() => handlePreset('summarize')}
+            >
+              📝 总结
+            </button>
+            <button
+              className={aiMode === 'optimize' ? 'active' : ''}
+              onClick={() => handlePreset('optimize')}
+            >
+              ✨ 优化
+            </button>
+            <button
+              className={aiMode === 'qa' ? 'active' : ''}
+              onClick={() => handlePreset('qa')}
+            >
+              ❓ 问答
+            </button>
+            <button className="clear-btn" onClick={clearChatMessages}>
+              清空
+            </button>
+          </div>
+
+          {/* 消息列表 */}
+          <div className="chat-messages">
+            {chatMessages.length === 0 && (
+              <div className="chat-empty">
+                <p>选择模式并发送消息开始对话</p>
+                <p className="hint">
+                  提示：点击字幕可以针对特定内容提问
+                </p>
+              </div>
+            )}
+            {chatMessages.map((msg, index) => (
+              <div key={index} className={`chat-message ${msg.role}`}>
+                <div className="message-content">{msg.content}</div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="chat-message assistant loading">
+                <div className="message-content">思考中...</div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* 输入框 */}
+          <div className="chat-input">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={
+                aiMode === 'qa'
+                  ? '输入你的问题...'
+                  : '点击上方按钮执行操作，或输入自定义指令...'
+              }
+              disabled={isLoading}
+            />
+            <button onClick={handleSend} disabled={isLoading || !input.trim()}>
+              发送
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AppState, Subtitle, ChatMessage, AIMode, BottomPanelMode } from '../types';
+import { AppState, Subtitle, ChatMessage, AIMode, BottomPanelMode, VideoSegment } from '../types';
 
 // 默认模型
 const DEFAULT_MODEL = 'Qwen/Qwen2.5-7B-Instruct';
@@ -36,7 +36,22 @@ interface AppStore extends AppState {
   // 用户是否正在手动滚动字幕列表
   isUserScrolling: boolean;
   setIsUserScrolling: (scrolling: boolean) => void;
+  // 视频分段
+  setVideoSegments: (segments: VideoSegment[]) => void;
+  setSegmentPrompt: (prompt: string) => void;
 }
+
+// 默认的分段 prompt
+const DEFAULT_SEGMENT_PROMPT = `请根据以下字幕内容，将视频分为若干个逻辑段落，每个段落需要有：
+1. 标题（简洁概括该段落主题）
+2. 开始时间和结束时间（格式：HH:MM:SS）
+3. 一句话总结
+
+请按以下JSON格式返回：
+[
+  {"title": "标题1", "startTime": "00:00", "endTime": "05:30", "summary": "一句话总结"},
+  {"title": "标题2", "startTime": "05:30", "endTime": "10:00", "summary": "一句话总结"}
+]`;
 
 export const useAppStore = create<AppStore>((set) => ({
   videoPath: null,
@@ -52,6 +67,8 @@ export const useAppStore = create<AppStore>((set) => ({
   notes: '',
   selectedSubtitleId: null,
   isUserScrolling: false,
+  videoSegments: [],
+  segmentPrompt: localStorage.getItem('segmentPrompt') || DEFAULT_SEGMENT_PROMPT,
   setIsUserScrolling: (scrolling) => set({ isUserScrolling: scrolling }),
 
   setVideoPath: (path, name) => set({ videoPath: path, videoName: name }),
@@ -73,4 +90,9 @@ export const useAppStore = create<AppStore>((set) => ({
   },
   setNotes: (notes) => set({ notes }),
   setSelectedSubtitleId: (id) => set({ selectedSubtitleId: id }),
+  setVideoSegments: (segments) => set({ videoSegments: segments }),
+  setSegmentPrompt: (prompt) => {
+    localStorage.setItem('segmentPrompt', prompt);
+    set({ segmentPrompt: prompt });
+  },
 }));
