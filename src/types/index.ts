@@ -37,4 +37,5 @@ export interface AppState {
   aiApiKey: string;
   notes: string;
   selectedSubtitleId: number | null;
+  isUserScrolling: boolean;
 }

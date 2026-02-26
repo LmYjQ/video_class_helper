@@ -10,6 +10,13 @@ export const setVideoElement = (element: HTMLVideoElement | null) => {
 
 export const getVideoElement = () => videoElement;
 
+// 视频跳转函数
+export const seekVideo = (time: number) => {
+  if (videoElement) {
+    videoElement.currentTime = time;
+  }
+};
+
 interface AppStore extends AppState {
   setVideoPath: (path: string | null, name: string | null) => void;
   setSubtitles: (subtitles: Subtitle[]) => void;
@@ -22,6 +29,9 @@ interface AppStore extends AppState {
   setAiApiKey: (key: string) => void;
   setNotes: (notes: string) => void;
   setSelectedSubtitleId: (id: number | null) => void;
+  // 用户是否正在手动滚动字幕列表
+  isUserScrolling: boolean;
+  setIsUserScrolling: (scrolling: boolean) => void;
 }
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -36,6 +46,8 @@ export const useAppStore = create<AppStore>((set) => ({
   aiApiKey: localStorage.getItem('aiApiKey') || '',
   notes: '',
   selectedSubtitleId: null,
+  isUserScrolling: false,
+  setIsUserScrolling: (scrolling) => set({ isUserScrolling: scrolling }),
 
   setVideoPath: (path, name) => set({ videoPath: path, videoName: name }),
   setSubtitles: (subtitles) => set({ subtitles }),

@@ -1,18 +1,15 @@
 import React, { useRef, useCallback, useEffect } from 'react';
-import ReactPlayer from 'react-player';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import {
   Toolbar,
-  VideoPlayer,
   SubtitlePanel,
   AIChatPanel,
   MarkdownPanel,
 } from './components';
-import { useAppStore, setVideoElement } from './store';
+import { useAppStore, setVideoElement, seekVideo } from './store';
 import './App.css';
 
 function App() {
-  const playerRef = useRef<ReactPlayer>(null);
   const { videoPath, bottomPanelMode, setVideoPath } = useAppStore();
 
   // 处理视频加载
@@ -29,9 +26,7 @@ function App() {
 
   // 处理字幕跳转
   const handleSeek = useCallback((time: number) => {
-    if (playerRef.current) {
-      playerRef.current.seekTo(time, 'seconds');
-    }
+    seekVideo(time);
   }, []);
 
   // 转换视频路径
@@ -46,10 +41,7 @@ function App() {
       <div className="main-content">
         {/* 左侧视频区域 */}
         <div className="video-section">
-          <VideoPlayerWithRef
-            videoUrl={videoUrl}
-            playerRef={playerRef}
-          />
+          <VideoPlayerWithRef videoUrl={videoUrl} />
         </div>
 
         {/* 右侧字幕区域 */}
@@ -85,27 +77,21 @@ function App() {
 // 包装 VideoPlayer 以支持 ref
 interface VideoPlayerWithRefProps {
   videoUrl: string | null;
-  playerRef: React.RefObject<ReactPlayer>;
 }
 
 const VideoPlayerWithRef: React.FC<VideoPlayerWithRefProps> = ({
   videoUrl,
-  playerRef,
 }) => {
   const { setCurrentTime, setIsPlaying } = useAppStore();
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // 同步 video 元素和 ReactPlayer
+  // 将 video 元素注册到 store
   useEffect(() => {
-    if (playerRef.current && videoRef.current) {
-      // 将 playerRef 的 seekTo 方法绑定到 video 元素
-      (playerRef.current as any).seekToVideo = (seconds: number) => {
-        if (videoRef.current) {
-          videoRef.current.currentTime = seconds;
-        }
-      };
+    if (videoRef.current) {
+      setVideoElement(videoRef.current);
     }
-  }, [playerRef]);
+    return () => setVideoElement(null);
+  }, []);
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
