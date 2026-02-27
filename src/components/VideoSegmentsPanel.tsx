@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppStore, seekVideo } from '../store';
-import { SiliconFlowAI } from '../services/ai';
+import { createAIProvider } from '../services/ai';
 import { formatTime } from '../utils/timeFormat';
 
 // 格式化字幕文本，包含时间信息
@@ -37,6 +37,7 @@ export const VideoSegmentsPanel: React.FC = () => {
     setSegmentPrompt,
     aiApiKey,
     aiModel,
+    aiPlatform,
   } = useAppStore();
 
   const [isGenerating, setIsGenerating] = useState(false);
@@ -58,7 +59,7 @@ export const VideoSegmentsPanel: React.FC = () => {
     setIsGenerating(true);
 
     try {
-      const ai = new SiliconFlowAI({ apiKey: aiApiKey, model: aiModel });
+      const ai = createAIProvider({ platform: aiPlatform, apiKey: aiApiKey, model: aiModel });
       const subtitlesText = formatSubtitlesWithTime(subtitles);
 
       // 获取视频总时长

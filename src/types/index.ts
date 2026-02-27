@@ -33,6 +33,9 @@ export type AIMode = 'summarize' | 'optimize' | 'qa';
 // 底部面板模式
 export type BottomPanelMode = 'ai' | 'notes' | 'hidden';
 
+// AI平台类型
+export type AIPlatform = 'siliconflow' | 'openai' | 'deepseek' | 'zhipu' | 'moonshot';
+
 // 应用状态
 export interface AppState {
   videoPath: string | null;
@@ -45,6 +48,7 @@ export interface AppState {
   aiMode: AIMode;
   aiApiKey: string;
   aiModel: string;
+  aiPlatform: AIPlatform;
   notes: string;
   selectedSubtitleId: number | null;
   isUserScrolling: boolean;

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
-import { AppState, Subtitle, ChatMessage, AIMode, BottomPanelMode, VideoSegment } from '../types';
+import { AppState, Subtitle, ChatMessage, AIMode, BottomPanelMode, VideoSegment, AIPlatform } from '../types';
 
+// 默认平台
+const DEFAULT_PLATFORM: AIPlatform = 'siliconflow';
 // 默认模型
 const DEFAULT_MODEL = 'Qwen/Qwen2.5-7B-Instruct';
 
@@ -31,6 +33,7 @@ interface AppStore extends AppState {
   setAIMode: (mode: AIMode) => void;
   setAiApiKey: (key: string) => void;
   setAiModel: (model: string) => void;
+  setAiPlatform: (platform: AIPlatform) => void;
   setNotes: (notes: string) => void;
   setSelectedSubtitleId: (id: number | null) => void;
   // 用户是否正在手动滚动字幕列表
@@ -64,6 +67,7 @@ export const useAppStore = create<AppStore>((set) => ({
   aiMode: 'summarize',
   aiApiKey: localStorage.getItem('aiApiKey') || '',
   aiModel: localStorage.getItem('aiModel') || DEFAULT_MODEL,
+  aiPlatform: (localStorage.getItem('aiPlatform') as AIPlatform) || DEFAULT_PLATFORM,
   notes: '',
   selectedSubtitleId: null,
   isUserScrolling: false,
@@ -87,6 +91,10 @@ export const useAppStore = create<AppStore>((set) => ({
   setAiModel: (model) => {
     localStorage.setItem('aiModel', model);
     set({ aiModel: model });
+  },
+  setAiPlatform: (platform) => {
+    localStorage.setItem('aiPlatform', platform);
+    set({ aiPlatform: platform });
   },
   setNotes: (notes) => set({ notes }),
   setSelectedSubtitleId: (id) => set({ selectedSubtitleId: id }),

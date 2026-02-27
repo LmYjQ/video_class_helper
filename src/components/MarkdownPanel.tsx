@@ -1,20 +1,25 @@
 import React, { useState } from 'react';
 import { save, open } from '@tauri-apps/plugin-dialog';
 import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
-import { marked } from 'marked';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { useAppStore } from '../store';
 
 export const MarkdownPanel: React.FC = () => {
   const { notes, setNotes, videoName } = useAppStore();
   const [isPreview, setIsPreview] = useState(false);
 
-  // 渲染 Markdown
+  // 渲染 Markdown（支持 LaTeX 公式）
   const renderMarkdown = (text: string) => {
-    try {
-      return { __html: marked(text) as string };
-    } catch {
-      return { __html: text };
-    }
+    return (
+      <ReactMarkdown
+        remarkPlugins={[remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+      >
+        {text}
+      </ReactMarkdown>
+    );
   };
 
   // 保存笔记
@@ -81,10 +86,9 @@ export const MarkdownPanel: React.FC = () => {
 
       <div className="markdown-content">
         {isPreview ? (
-          <div
-            className="markdown-preview"
-            dangerouslySetInnerHTML={renderMarkdown(notes)}
-          />
+          <div className="markdown-preview">
+            {renderMarkdown(notes)}
+          </div>
         ) : (
           <textarea
             className="markdown-editor"

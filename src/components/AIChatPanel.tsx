@@ -1,14 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '../store';
-import { SiliconFlowAI } from '../services/ai';
-import { AI_PROMPTS, AIMode } from '../services/ai/types';
+import { createAIProvider, AI_PROMPTS, AIMode } from '../services/ai';
 import { VideoSegmentsPanel } from './VideoSegmentsPanel';
-
-// 可用模型列表
-const AVAILABLE_MODELS = [
-  'Qwen/Qwen2.5-7B-Instruct',
-  'Qwen/Qwen3-8B'
-];
 
 // Tab 类型
 type ChatTab = 'chat' | 'segments';
@@ -26,15 +19,13 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isEmbedded = false }) 
     aiMode,
     setAIMode,
     aiApiKey,
-    setAiApiKey,
     aiModel,
-    setAiModel,
+    aiPlatform,
     selectedSubtitleId,
   } = useAppStore();
 
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState(aiApiKey);
   const [activeTab, setActiveTab] = useState<ChatTab>('chat');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +47,11 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isEmbedded = false }) 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
+    if (!aiApiKey) {
+      alert('请先在右上角设置 API Key');
+      return;
+    }
+
     const userMessage = input.trim();
     setInput('');
     setIsLoading(true);
@@ -64,7 +60,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isEmbedded = false }) 
     addChatMessage({ role: 'user', content: userMessage });
 
     try {
-      const ai = new SiliconFlowAI({ apiKey: aiApiKey, model: aiModel });
+      const ai = createAIProvider({ platform: aiPlatform, apiKey: aiApiKey, model: aiModel });
 
       // 构建消息列表
       const systemPrompt = AI_PROMPTS[aiMode] || '';
@@ -93,11 +89,6 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isEmbedded = false }) 
     }
   };
 
-  // 保存 API Key
-  const handleSaveApiKey = () => {
-    setAiApiKey(apiKeyInput);
-  };
-
   // 键盘提交
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -111,7 +102,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isEmbedded = false }) 
     setAIMode(mode);
 
     if (!aiApiKey) {
-      alert('请先设置 API Key');
+      alert('请先在右上角设置 API Key');
       return;
     }
 
@@ -131,30 +122,6 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isEmbedded = false }) 
 
   return (
     <div className={`ai-chat-panel ${isEmbedded ? 'embedded' : ''}`}>
-      {/* API Key 和模型选择 */}
-      <div className="api-key-section">
-        <input
-          type="password"
-          placeholder="SiliconFlow API Key"
-          value={apiKeyInput}
-          onChange={(e) => setApiKeyInput(e.target.value)}
-        />
-        <button onClick={handleSaveApiKey} disabled={!apiKeyInput}>
-          保存
-        </button>
-        <select
-          value={aiModel}
-          onChange={(e) => setAiModel(e.target.value)}
-          title="选择AI模型"
-        >
-          {AVAILABLE_MODELS.map((model) => (
-            <option key={model} value={model}>
-              {model.split('/')[1]}
-            </option>
-          ))}
-        </select>
-      </div>
-
       {/* Tab 切换 - 仅在非嵌入模式显示 */}
       {!isEmbedded && (
         <div className="chat-tabs">
