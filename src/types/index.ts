@@ -41,6 +41,7 @@ export interface AppState {
   videoPath: string | null;
   videoName: string | null;
   subtitles: Subtitle[];
+  subtitlePath: string | null;  // 字幕文件路径
   currentTime: number;
   isPlaying: boolean;
   bottomPanelMode: BottomPanelMode;

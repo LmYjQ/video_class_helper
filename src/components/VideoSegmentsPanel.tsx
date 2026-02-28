@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppStore, seekVideo } from '../store';
 import { createAIProvider } from '../services/ai';
 import { formatTime } from '../utils/timeFormat';
+import { readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+
+// 根据字幕路径生成分段文件路径
+const getSegmentsFilePath = (subtitlePath: string): string => {
+  // 将 .srt 替换为 .segments.json
+  return subtitlePath.replace(/\.(srt|txt)$/i, '.segments.json');
+};
 
 // 格式化字幕文本，包含时间信息
 const formatSubtitlesWithTime = (subtitles: { startTime: number; endTime: number; text: string }[]) => {
@@ -31,6 +38,7 @@ const parseTimeToSeconds = (timeStr: string): number => {
 export const VideoSegmentsPanel: React.FC = () => {
   const {
     subtitles,
+    subtitlePath,
     videoSegments,
     setVideoSegments,
     segmentPrompt,
@@ -43,6 +51,35 @@ export const VideoSegmentsPanel: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [tempPrompt, setTempPrompt] = useState(segmentPrompt);
+
+  // 加载字幕时自动加载分段文件
+  useEffect(() => {
+    const loadSegments = async () => {
+      if (subtitlePath) {
+        try {
+          const segmentsPath = getSegmentsFilePath(subtitlePath);
+          const content = await readTextFile(segmentsPath);
+          const segments = JSON.parse(content);
+          setVideoSegments(segments);
+        } catch {
+          // 文件不存在或解析失败，忽略
+        }
+      }
+    };
+    loadSegments();
+  }, [subtitlePath, setVideoSegments]);
+
+  // 保存分段到文件
+  const saveSegmentsToFile = async (segments: typeof videoSegments) => {
+    if (subtitlePath && segments.length > 0) {
+      try {
+        const segmentsPath = getSegmentsFilePath(subtitlePath);
+        await writeTextFile(segmentsPath, JSON.stringify(segments, null, 2));
+      } catch (error) {
+        console.error('保存分段失败:', error);
+      }
+    }
+  };
 
   // 生成视频分段
   const handleGenerateSegments = async () => {
@@ -94,6 +131,7 @@ export const VideoSegmentsPanel: React.FC = () => {
             summary: seg.summary || '',
           }));
           setVideoSegments(parsedSegments);
+          await saveSegmentsToFile(parsedSegments);
         } else {
           alert('无法解析AI返回的分段结果');
         }

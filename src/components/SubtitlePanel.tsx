@@ -24,28 +24,30 @@ export const SubtitlePanel: React.FC = () => {
   const listRef = useRef<HTMLDivElement>(null);
   const [searchText, setSearchText] = useState('');
   const scrollTimeoutRef = useRef<number | null>(null);
+  const isScrollingRef = useRef(false);
 
   // 获取当前播放的字幕索引
   const currentIndex = getCurrentSubtitleIndex(subtitles, currentTime);
 
-  // 处理用户滚动开始
-  const handleScrollStart = () => {
+  // 处理用户滚动 - 使用节流来检测滚动结束
+  const handleScroll = () => {
+    isScrollingRef.current = true;
     setIsUserScrolling(true);
+
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
-  };
 
-  // 处理用户滚动结束 - 延迟恢复自动滚动
-  const handleScrollEnd = () => {
+    // 滚动停止 2 秒后恢复自动滚动
     scrollTimeoutRef.current = window.setTimeout(() => {
+      isScrollingRef.current = false;
       setIsUserScrolling(false);
-    }, 3000);
+    }, 2000);
   };
 
   // 自动滚动到当前字幕（仅当用户未手动滚动时）
   useEffect(() => {
-    if (currentIndex >= 0 && listRef.current && !isUserScrolling) {
+    if (currentIndex >= 0 && listRef.current && !isScrollingRef.current) {
       const currentElement = listRef.current.querySelector(
         `.subtitle-item.current`
       );
@@ -92,10 +94,8 @@ export const SubtitlePanel: React.FC = () => {
       <div
         className="subtitle-list"
         ref={listRef}
-        onScroll={handleScrollStart}
-        onWheel={handleScrollStart}
-        onMouseEnter={handleScrollStart}
-        onMouseLeave={handleScrollEnd}
+        onScroll={handleScroll}
+        onWheel={handleScroll}
       >
         {filteredSubtitles.map((subtitle, index) => {
           const isCurrent = index === currentIndex;

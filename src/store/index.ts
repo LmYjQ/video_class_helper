@@ -24,7 +24,8 @@ export const seekVideo = (time: number) => {
 
 interface AppStore extends AppState {
   setVideoPath: (path: string | null, name: string | null) => void;
-  setSubtitles: (subtitles: Subtitle[]) => void;
+  setSubtitles: (subtitles: Subtitle[], path: string | null) => void;
+  setSubtitlePath: (path: string | null) => void;
   setCurrentTime: (time: number) => void;
   setIsPlaying: (playing: boolean) => void;
   setBottomPanelMode: (mode: BottomPanelMode) => void;
@@ -60,6 +61,7 @@ export const useAppStore = create<AppStore>((set) => ({
   videoPath: null,
   videoName: null,
   subtitles: [],
+  subtitlePath: null,
   currentTime: 0,
   isPlaying: false,
   bottomPanelMode: 'hidden',
@@ -75,8 +77,10 @@ export const useAppStore = create<AppStore>((set) => ({
   segmentPrompt: localStorage.getItem('segmentPrompt') || DEFAULT_SEGMENT_PROMPT,
   setIsUserScrolling: (scrolling) => set({ isUserScrolling: scrolling }),
 
-  setVideoPath: (path, name) => set({ videoPath: path, videoName: name }),
-  setSubtitles: (subtitles) => set({ subtitles }),
+  setVideoPath: (path, name) => {
+    set({ videoPath: path, videoName: name, videoSegments: [] });
+  },
+  setSubtitles: (subtitles, path) => set({ subtitles, subtitlePath: path }),
   setCurrentTime: (time) => set({ currentTime: time }),
   setIsPlaying: (playing) => set({ isPlaying: playing }),
   setBottomPanelMode: (mode) => set({ bottomPanelMode: mode }),
@@ -98,9 +102,12 @@ export const useAppStore = create<AppStore>((set) => ({
   },
   setNotes: (notes) => set({ notes }),
   setSelectedSubtitleId: (id) => set({ selectedSubtitleId: id }),
-  setVideoSegments: (segments) => set({ videoSegments: segments }),
+  setVideoSegments: (segments) => {
+    set({ videoSegments: segments });
+  },
   setSegmentPrompt: (prompt) => {
     localStorage.setItem('segmentPrompt', prompt);
     set({ segmentPrompt: prompt });
   },
+  setSubtitlePath: (path) => set({ subtitlePath: path }),
 }));

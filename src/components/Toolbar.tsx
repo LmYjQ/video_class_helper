@@ -60,7 +60,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onVideoLoad }) => {
       try {
         const content = await readTextFile(selected as string);
         const subtitles = parseSRT(content);
-        setSubtitles(subtitles);
+        setSubtitles(subtitles, selected as string);
       } catch (error) {
         console.error('Failed to load subtitle:', error);
         alert('字幕文件解析失败');
